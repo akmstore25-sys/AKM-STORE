@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PE AKM STORE - Catálogo Oficial y Panel Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            bg: '#FAF7F2',
+                            card: '#FFFFFF',
+                            dark: '#18181B',
+                            muted: '#71717A',
+                            accent: '#F8C363',
+                            accentHover: '#ECA72C',
+                            border: '#E4E4E7',
+                            admin: '#7C3AED',
+                            adminHover: '#6D28D9'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FAF7F2;
+            color: #18181B;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FAF7F2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D4D4D8;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #A1A1AA;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .admin-pulse {
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0% { border-color: rgba(124, 58, 237, 0.4); }
+            50% { border-color: rgba(124, 58, 237, 1); }
+            100% { border-color: rgba(124, 58, 237, 0.4); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-brand-accent selection:text-brand-dark">
+
+    <!-- Top Announcement Bar -->
+    <div class="bg-brand-dark text-white text-xs py-2 px-4 text-center relative overflow-hidden flex justify-between items-center">
+        <div class="max-w-7xl mx-auto w-full flex justify-between items-center px-2">
+            <div id="announcementText" class="transition-opacity duration-500 ease-in-out font-medium tracking-wide text-center w-full">
+                ✨ Envíos a todo el Perú | Pagos 100% seguros con Yape y PLIN 🌸
+            </div>
+            <!-- Admin Toggle Quick Button -->
+            <button id="toggleAdminTopBtn" onclick="toggleAdminMode()" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-amber-300 rounded-full text-[11px] font-bold transition-all border border-amber-400/30">
+                <span>⚙️</span>
+                <span id="topAdminStatusText">Modo Admin</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Admin Indicator Bar (Appears when admin mode is ON) -->
+    <div id="adminRibbon" class="hidden bg-purple-900 text-purple-100 text-xs py-2 px-4 border-b border-purple-700">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                <span class="font-extrabold uppercase tracking-wider text-amber-300">MODO ADMINISTRACIÓN ACTIVO</span>
+                <span class="text-purple-300 hidden md:inline">| Puedes editar o eliminar productos en tiempo real</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="openAdminModal('settings')" class="px-3 py-1 bg-purple-800 hover:bg-purple-700 rounded-lg font-bold text-[11px] transition-colors border border-purple-600 flex items-center gap-1">
+                    📲 Número WSP (<span id="ribbonWspNum">900000000</span>)
+                </button>
+                <button onclick="openAdminModal('add')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-[11px] transition-colors flex items-center gap-1">
+                    ➕ Añadir Producto
+                </button>
+                <button onclick="openCodeGuideModal()" class="px-3 py-1 bg-amber-500 hover:bg-amber-400 text-brand-dark rounded-lg font-bold text-[11px] transition-colors flex items-center gap-1">
+                    📄 Guía de Código
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-30 bg-[#FAF7F2]/90 backdrop-blur-md border-b border-zinc-200/80 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <button id="mobileMenuBtn" class="lg:hidden p-2 text-zinc-700 hover:text-zinc-900 focus:outline-none" aria-label="Abrir menú">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+
+                <!-- Brand Logo -->
+                <a href="#" onclick="filterCategory('all'); return false;" class="flex items-center gap-3 group">
+                    <div class="relative w-10 h-10 flex items-center justify-center transition-transform group-hover:scale-105 duration-300">
+                        <svg class="w-10 h-10 text-brand-dark drop-shadow-sm" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M50 15 C44 2 32 10 38 28 C41 35 46 41 50 43 C54 41 59 35 62 28 C68 10 56 2 50 15 Z" fill="#FFFFFF" stroke="#18181B" stroke-width="3.5" stroke-linejoin="round"/>
+                            <path d="M50 85 C44 98 32 90 38 72 C41 65 46 59 50 57 C54 59 59 65 62 72 C68 90 56 98 50 85 Z" fill="#FFFFFF" stroke="#18181B" stroke-width="3.5" stroke-linejoin="round"/>
+                            <path d="M15 50 C2 44 10 32 28 38 C35 41 41 46 43 50 C41 54 35 59 28 62 C10 68 2 56 15 50 Z" fill="#FFFFFF" stroke="#18181B" stroke-width="3.5" stroke-linejoin="round"/>
+                            <path d="M85 50 C98 44 90 32 72 38 C65 41 59 46 57 50 C59 54 65 59 72 62 C90 68 98 56 85 50 Z" fill="#FFFFFF" stroke="#18181B" stroke-width="3.5" stroke-linejoin="round"/>
+                            <path d="M25 25 C13 15 5 27 21 35 C28 38 34 42 39 44 C38 39 34 32 31 25 C27 15 15 13 25 25 Z" fill="#FFFFFF" stroke="#18181B" stroke-width="3.5" stroke-linejoin="round"/>
+                            <path d="M75 75 C87 85 95 73 79 65 C72 62 66 58 61 56 C62 61 66 68 69 75 C73 85 85 87 75 75 Z" fill="#FFFFFF" stroke="#18181B" stroke-width="3.5" stroke-linejoin="round"/>
+                            <path d="M75 25 C87 15 75 3 65 19 C62 26 58 32 56 37 C61 38 68 34 75 31 C85 27 87 15 75 25 Z" fill="#FFFFFF" stroke="#18181B" stroke-width="3.5" stroke-linejoin="round"/>
+                            <path d="M25 75 C13 85 25 97 35 81 C38 74 42 68 44 63 C39 64 32 68 25 71 C15 75 13 87 25 75 Z" fill="#FFFFFF" stroke="#18181B" stroke-width="3.5" stroke-linejoin="round"/>
+                            <circle cx="50" cy="50" r="14" fill="#F8C363" stroke="#18181B" stroke-width="3.5"/>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <div class="flex items-center gap-1">
+                            <span class="text-xs font-bold tracking-tight text-zinc-500 uppercase">PE</span>
+                            <span class="text-2xl font-black tracking-wider text-brand-dark font-sans leading-none">AKM</span>
+                        </div>
+                        <span class="text-[10px] tracking-[0.25em] font-semibold text-zinc-600 uppercase leading-tight">STORE</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden lg:flex items-center gap-8 text-sm font-semibold text-zinc-700">
+                    <button onclick="filterCategory('all')" class="nav-link hover:text-black transition-colors py-1 border-b-2 border-brand-dark">Inicio</button>
+                    <button onclick="filterCategory('tops')" class="nav-link hover:text-black transition-colors py-1 border-b-2 border-transparent">Tops & Polos</button>
+                    <button onclick="filterCategory('pantalones')" class="nav-link hover:text-black transition-colors py-1 border-b-2 border-transparent">Pantalones</button>
+                    <button onclick="filterCategory('vestidos')" class="nav-link hover:text-black transition-colors py-1 border-b-2 border-transparent">Vestidos</button>
+                    <button onclick="filterCategory('outfits')" class="nav-link hover:text-black transition-colors py-1 border-b-2 border-transparent">Outfits</button>
+                    <button onclick="filterCategory('accesorios')" class="nav-link hover:text-black transition-colors py-1 border-b-2 border-transparent">Accesorios</button>
+                </nav>
+
+                <!-- Action Controls -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <button id="searchToggleBtn" class="p-2 text-zinc-700 hover:text-zinc-900 rounded-full hover:bg-zinc-200/50 transition-colors" title="Buscar productos">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Direct WhatsApp Consultation Link (Uses Configured Number) -->
+                    <a id="headerWspBtn" href="#" target="_blank" rel="noopener" class="hidden sm:flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 px-3 py-2 rounded-full transition-colors" title="Atención directa por WhatsApp">
+                        <svg class="w-4 h-4 fill-current text-emerald-600" viewBox="0 0 24 24">
+                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+                        </svg>
+                        <span>WhatsApp</span>
+                    </a>
+
+                    <!-- Shopping Cart Button -->
+                    <button id="openCartBtn" class="relative p-2.5 bg-brand-dark text-white rounded-full hover:bg-zinc-800 transition-transform active:scale-95 shadow-md flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                        </svg>
+                        <span id="cartCount" class="absolute -top-1 -right-1 bg-brand-accent text-brand-dark text-[11px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden Search Bar -->
+        <div id="searchBarContainer" class="hidden border-t border-zinc-200 bg-white/95 px-4 py-3 transition-all">
+            <div class="max-w-3xl mx-auto flex items-center gap-2">
+                <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Buscar polos, pantalones, ropa de temporada..." class="w-full bg-transparent text-sm focus:outline-none py-1 text-zinc-800 placeholder-zinc-400">
+                <button id="clearSearchBtn" class="text-xs font-semibold text-zinc-400 hover:text-zinc-600 uppercase">Limpiar</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Drawer -->
+    <div id="mobileDrawer" class="fixed inset-0 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out lg:hidden">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" id="closeMobileDrawerBg"></div>
+        <div class="relative w-4/5 max-w-xs bg-brand-bg h-full shadow-2xl flex flex-col justify-between p-6 z-10">
+            <div>
+                <div class="flex items-center justify-between mb-8 pb-4 border-b border-zinc-200">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-xl tracking-tight">PE AKM STORE</span>
+                    </div>
+                    <button id="closeMobileDrawerBtn" class="p-1 text-zinc-500 hover:text-black">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <nav class="flex flex-col gap-4 text-base font-semibold text-zinc-800">
+                    <a href="#" onclick="filterCategory('all'); toggleMobileDrawer(); return false;" class="py-2 hover:text-brand-accent transition-colors">🌸 Todas las prendas</a>
+                    <a href="#" onclick="filterCategory('tops'); toggleMobileDrawer(); return false;" class="py-2 hover:text-brand-accent transition-colors">Tops & Polos</a>
+                    <a href="#" onclick="filterCategory('pantalones'); toggleMobileDrawer(); return false;" class="py-2 hover:text-brand-accent transition-colors">Pantalones & Jeans</a>
+                    <a href="#" onclick="filterCategory('vestidos'); toggleMobileDrawer(); return false;" class="py-2 hover:text-brand-accent transition-colors">Vestidos & Enterizos</a>
+                    <a href="#" onclick="filterCategory('outfits'); toggleMobileDrawer(); return false;" class="py-2 hover:text-brand-accent transition-colors">Outfits Completos</a>
+                    <a href="#" onclick="filterCategory('accesorios'); toggleMobileDrawer(); return false;" class="py-2 hover:text-brand-accent transition-colors">Accesorios</a>
+                </nav>
+            </div>
+            
+            <div class="pt-6 border-t border-zinc-200 text-xs space-y-3">
+                <button onclick="toggleAdminMode(); toggleMobileDrawer();" class="w-full py-2.5 bg-purple-100 hover:bg-purple-200 text-purple-900 font-bold rounded-xl flex items-center justify-center gap-2">
+                    ⚙️ <span id="mobileAdminBtnText">Activar Modo Admin</span>
+                </button>
+                <div class="text-zinc-500 text-center">
+                    <p class="font-semibold text-zinc-700">Atención vía WhatsApp</p>
+                    <p class="mt-0.5">Lunes a Sábado: 9:00 am - 8:00 pm</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Banner Section -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8">
+        <div class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-amber-100/80 via-amber-50 to-orange-100/50 p-6 sm:p-12 border border-amber-200/50 flex flex-col md:flex-row items-center justify-between gap-8 shadow-sm">
+            
+            <div class="max-w-xl space-y-4 text-center md:text-left z-10">
+                <div class="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-amber-200 text-xs font-bold text-amber-900 shadow-sm">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                    CATÁLOGO DIGITAL INTERACTIVO
+                </div>
+                <h1 class="text-3xl sm:text-5xl font-extrabold text-brand-dark tracking-tight leading-tight">
+                    Catálogo de Ropa Personalizable
+                </h1>
+                <p class="text-zinc-600 text-sm sm:text-base leading-relaxed">
+                    Gestiona tus productos, edita tu número de WhatsApp y personaliza tu tienda en segundos sin conocimientos de programación.
+                </p>
+                
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
+                    <a href="#catalogo" class="px-6 py-3.5 bg-brand-dark hover:bg-zinc-800 text-white font-bold text-sm rounded-full shadow-lg transition-all active:scale-95">
+                        Ver Productos 👇
+                    </a>
+                    <button onclick="openCodeGuideModal()" class="px-5 py-3.5 bg-white/90 hover:bg-white text-zinc-800 font-semibold text-sm rounded-full border border-zinc-300 transition-all flex items-center gap-1.5">
+                        📖 ¿Cómo publicar esta web?
+                    </button>
+                </div>
+            </div>
+
+            <!-- Value Prop Badges & Admin Control -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-1 gap-3 w-full md:w-64 z-10">
+                <div class="bg-white/90 backdrop-blur-sm p-3.5 rounded-2xl border border-amber-100 flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center text-purple-700 font-bold">⚙️</div>
+                        <div>
+                            <h4 class="text-xs font-bold text-zinc-900">Modo Admin</h4>
+                            <p id="heroAdminStatus" class="text-[10px] text-zinc-500">Inactivo</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleAdminMode()" id="heroAdminBtn" class="px-2.5 py-1 text-[11px] font-bold bg-zinc-100 hover:bg-purple-600 hover:text-white rounded-lg transition-colors">
+                        Activar
+                    </button>
+                </div>
+
+                <div class="bg-white/80 backdrop-blur-sm p-3.5 rounded-2xl border border-amber-100 flex items-center gap-3 shadow-sm">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 text-lg">📲</div>
+                    <div class="overflow-hidden">
+                        <h4 class="text-xs font-bold text-zinc-900">WhatsApp Tienda</h4>
+                        <p id="heroWspDisplay" class="text-[11px] text-zinc-500 font-mono truncate">+51 900000000</p>
+                    </div>
+                </div>
+
+                <div class="bg-white/80 backdrop-blur-sm p-3.5 rounded-2xl border border-amber-100 flex items-center gap-3 shadow-sm">
+                    <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700 text-lg">💳</div>
+                    <div>
+                        <h4 class="text-xs font-bold text-zinc-900">Medios de Pago</h4>
+                        <p class="text-[11px] text-zinc-500">Yape, PLIN y Tarjetas</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-amber-200/40 rounded-full blur-3xl pointer-events-none"></div>
+        </div>
+    </section>
+
+    <!-- Main Catalog Section -->
+    <main id="catalogo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- Controls Header: Category Pills & Sort -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            
+            <div class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar" id="categoryContainer">
+                <button onclick="filterCategory('all')" data-cat="all" class="cat-pill active px-4 py-2 text-xs sm:text-sm font-bold rounded-full transition-all bg-brand-dark text-white shadow-sm whitespace-nowrap">
+                    🌸 Todos
+                </button>
+                <button onclick="filterCategory('tops')" data-cat="tops" class="cat-pill px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all bg-white hover:bg-zinc-100 text-zinc-700 border border-zinc-200 whitespace-nowrap">
+                    Tops & Polos
+                </button>
+                <button onclick="filterCategory('pantalones')" data-cat="pantalones" class="cat-pill px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all bg-white hover:bg-zinc-100 text-zinc-700 border border-zinc-200 whitespace-nowrap">
+                    Pantalones
+                </button>
+                <button onclick="filterCategory('vestidos')" data-cat="vestidos" class="cat-pill px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all bg-white hover:bg-zinc-100 text-zinc-700 border border-zinc-200 whitespace-nowrap">
+                    Vestidos
+                </button>
+                <button onclick="filterCategory('outfits')" data-cat="outfits" class="cat-pill px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all bg-white hover:bg-zinc-100 text-zinc-700 border border-zinc-200 whitespace-nowrap">
+                    Outfits
+                </button>
+                <button onclick="filterCategory('accesorios')" data-cat="accesorios" class="cat-pill px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all bg-white hover:bg-zinc-100 text-zinc-700 border border-zinc-200 whitespace-nowrap">
+                    Accesorios
+                </button>
+            </div>
+
+            <!-- Sort and Admin Add Button -->
+            <div class="flex items-center justify-between md:justify-end gap-3 text-xs">
+                <span id="productCounter" class="text-zinc-500 font-medium">Cargando catálogo...</span>
+                
+                <div id="adminAddBtnContainer" class="hidden">
+                    <button onclick="openAdminModal('add')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-sm transition-all flex items-center gap-1">
+                        <span>➕ Nuevo</span>
+                    </button>
+                </div>
+
+                <select id="sortSelect" onchange="sortProducts(this.value)" class="bg-white border border-zinc-200 text-zinc-700 font-medium px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                    <option value="featured">Destacados</option>
+                    <option value="low">Precio: Menor a Mayor</option>
+                    <option value="high">Precio: Mayor a Menor</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Product Grid Target -->
+        <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <!-- Dynamic JavaScript Product Cards Rendered Here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-16">
+            <div class="w-16 h-16 mx-auto mb-4 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-2xl">🔍</div>
+            <h3 class="text-lg font-bold text-zinc-800">No encontramos prendas</h3>
+            <p class="text-xs text-zinc-500 mt-1">Intenta con otra búsqueda o categoría.</p>
+            <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-brand-dark text-white text-xs font-bold rounded-full">Ver catálogo completo</button>
+        </div>
+    </main>
+
+    <!-- Cart Slide-Over Drawer -->
+    <div id="cartDrawer" class="fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 ease-in-out">
+        <div id="closeCartBg" class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+        <div class="relative w-full max-w-md bg-white h-full shadow-2xl ml-auto flex flex-col justify-between z-10">
+            <div class="p-4 sm:p-6 border-b border-zinc-100 flex items-center justify-between bg-brand-bg">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-extrabold text-zinc-900">Tu Carrito de Compras</h2>
+                    <span id="cartBadgeCount" class="bg-brand-accent text-brand-dark text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                </div>
+                <button id="closeCartBtn" class="p-1.5 text-zinc-400 hover:text-zinc-700 rounded-full hover:bg-zinc-200/60 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div id="cartItemsList" class="p-4 sm:p-6 overflow-y-auto flex-grow space-y-4">
+                <!-- Cart items rendered dynamically -->
+            </div>
+
+            <div class="p-4 sm:p-6 border-t border-zinc-100 bg-white space-y-4">
+                <div class="space-y-1.5">
+                    <div class="flex justify-between text-xs text-zinc-500">
+                        <span>Subtotal de prendas:</span>
+                        <span id="cartSubtotal" class="font-semibold text-zinc-800">S/. 0.00</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-zinc-500">
+                        <span>Envío estimado:</span>
+                        <span id="cartShippingText" class="text-emerald-600 font-semibold">S/. 10.00</span>
+                    </div>
+                    <div class="flex justify-between text-base font-extrabold text-zinc-900 pt-2 border-t border-dashed border-zinc-200">
+                        <span>Total estimado:</span>
+                        <span id="cartTotal" class="text-brand-dark">S/. 0.00</span>
+                    </div>
+                </div>
+
+                <button id="proceedCheckoutBtn" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                    <span>Completar Pedido por WhatsApp</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Checkout Modal -->
+    <div id="checkoutModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" id="closeCheckoutBg"></div>
+        
+        <div class="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-4 border-b border-zinc-100">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🌸</span>
+                    <h3 class="text-lg font-bold text-zinc-900">Datos para la Entrega</h3>
+                </div>
+                <button id="closeCheckoutBtn" class="p-1 text-zinc-400 hover:text-zinc-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <form id="checkoutForm" class="space-y-4 mt-4">
+                <div>
+                    <label class="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">Nombre Completo *</label>
+                    <input type="text" id="custName" required placeholder="Ej: María García" class="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">Teléfono / WSP *</label>
+                        <input type="tel" id="custPhone" required placeholder="Ej: 987654321" class="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">Ciudad / Distrito *</label>
+                        <input type="text" id="custCity" required placeholder="Ej: Miraflores, Lima" class="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">Dirección de Envío (Opcional)</label>
+                    <input type="text" id="custAddress" placeholder="Ej: Av. Benavides 1230" class="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">Método de Pago Preferido</label>
+                    <select id="custPayment" class="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-accent font-medium">
+                        <option value="Yape">Yape (Recomendado)</option>
+                        <option value="PLIN">PLIN</option>
+                        <option value="Transferencia BCP/BBVA">Transferencia Bancaria</option>
+                        <option value="Efectivo contra entrega">Pago ContraEntrega (Lima)</option>
+                    </select>
+                </div>
+
+                <div class="bg-amber-50/80 p-3.5 rounded-xl border border-amber-200/60 text-xs space-y-1">
+                    <p class="font-bold text-amber-900">Resumen del Pedido:</p>
+                    <p id="modalItemsSummary" class="text-zinc-600 truncate">Calculando productos...</p>
+                    <p class="font-extrabold text-zinc-900 text-sm pt-1">Total a Pagar: <span id="modalTotalSummary" class="text-emerald-700">S/. 0.00</span></p>
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                    <span>Enviar Pedido por WhatsApp</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Product Detail Quick-View Modal -->
+    <div id="productModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" id="closeProductBg"></div>
+        <div class="relative bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
+            <button id="closeProductBtn" class="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-700 bg-zinc-100 rounded-full z-10">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div id="productModalContent" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </div>
+    </div>
+
+    <!-- ADMIN MODALS (SETTINGS & PRODUCT CRUD) -->
+    
+    <!-- Admin Settings & CRUD Form Modal -->
+    <div id="adminModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/70 backdrop-blur-sm" onclick="closeAdminModal()"></div>
+        
+        <div class="relative bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl z-10 max-h-[92vh] overflow-y-auto border-2 border-purple-500">
+            <div class="flex items-center justify-between pb-4 border-b border-zinc-200">
+                <div class="flex items-center gap-2 text-purple-900">
+                    <span class="text-xl">⚙️</span>
+                    <h3 id="adminModalTitle" class="text-lg font-bold">Panel de Administración</h3>
+                </div>
+                <button onclick="closeAdminModal()" class="p-1 text-zinc-400 hover:text-zinc-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Tab 1: Store & WhatsApp Settings Form -->
+            <form id="adminSettingsForm" class="space-y-4 mt-4 hidden">
+                <div class="bg-purple-50 p-3 rounded-xl border border-purple-200 text-xs text-purple-800">
+                    💡 Los cambios realizados se guardan automáticamente en tu navegador y se aplican de inmediato en los botones de checkout.
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-zinc-700 uppercase mb-1">Número de WhatsApp de Ventas *</label>
+                    <div class="flex gap-2">
+                        <span class="px-3 py-2 bg-zinc-100 border border-zinc-200 rounded-xl text-xs font-bold flex items-center text-zinc-600">+51</span>
+                        <input type="text" id="adminWspInput" required placeholder="987654321" class="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono">
+                    </div>
+                    <p class="text-[11px] text-zinc-500 mt-1">Número donde recibirás las órdenes formateadas con pedido.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-zinc-700 uppercase mb-1">Costo de Envío por Defecto (S/.)</label>
+                    <input type="number" step="0.5" id="adminShippingInput" required placeholder="10.00" class="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+
+                <div class="pt-2 flex gap-3">
+                    <button type="submit" class="w-full py-3 bg-purple-700 hover:bg-purple-800 text-white font-extrabold text-xs rounded-xl shadow-md transition-all">
+                        💾 Guardar Configuración
+                    </button>
+                    <button type="button" onclick="resetToInitialData()" class="px-4 py-3 bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold text-xs rounded-xl transition-all whitespace-nowrap">
+                        🔄 Reiniciar Datos
+                    </button>
+                </div>
+            </form>
+
+            <!-- Tab 2: Add / Edit Product Form -->
+            <form id="adminProductForm" class="space-y-4 mt-4 hidden">
+                <input type="hidden" id="prodEditId">
+
+                <div>
+                    <label class="block text-xs font-bold text-zinc-700 uppercase mb-1">Nombre de la Prenda *</label>
+                    <input type="text" id="prodName" required placeholder="Ej: Top Crop Algodón Daisy" class="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-700 uppercase mb-1">Precio Oferta (S/.) *</label>
+                        <input type="number" step="0.10" id="prodPrice" required placeholder="49.90" class="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-700 uppercase mb-1">Precio Lista / Tachado</label>
+                        <input type="number" step="0.10" id="prodOrigPrice" placeholder="65.00" class="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-700 uppercase mb-1">Categoría *</label>
+                        <select id="prodCategory" required class="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium">
+                            <option value="tops">Tops & Polos</option>
+                            <option value="pantalones">Pantalones</option>
+                            <option value="vestidos">Vestidos</option>
+                            <option value="outfits">Outfits</option>
+                            <option value="accesorios">Accesorios</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-700 uppercase mb-1">Etiqueta Destacada</label>
+                        <input type="text" id="prodBadge" placeholder="Ej: Nuevo, Más Vendido" class="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-zinc-700 uppercase mb-1">URL de la Imagen (Unsplash, Cloudinary, etc.) *</label>
+                    <input type="url" id="prodImage" required placeholder="https://images.unsplash.com/photo-..." class="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs font-mono">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-700 uppercase mb-1">Tallas (separadas por coma)</label>
+                        <input type="text" id="prodSizes" placeholder="S, M, L" class="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-zinc-700 uppercase mb-1">Nombres de Colores</label>
+                        <input type="text" id="prodColorNames" placeholder="Crema, Negro, Miel" class="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-zinc-700 uppercase mb-1">Descripción del Producto</label>
+                    <textarea id="prodDesc" rows="2" placeholder="Detalles del material, ajuste o lavado..." class="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 bg-purple-700 hover:bg-purple-800 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5">
+                    <span>💾 Guardar Producto</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- CODE EDITING EXPLANATORY GUIDE MODAL -->
+    <div id="codeGuideModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/75 backdrop-blur-md" onclick="closeCodeGuideModal()"></div>
+        <div class="relative bg-zinc-900 text-zinc-100 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl z-10 max-h-[90vh] overflow-y-auto border border-zinc-700">
+            <div class="flex items-center justify-between pb-4 border-b border-zinc-800">
+                <div class="flex items-center gap-2 text-amber-400">
+                    <span class="text-xl">📖</span>
+                    <h3 class="text-lg font-extrabold">Guía: Cómo publicar esta página permanentemente</h3>
+                </div>
+                <button onclick="closeCodeGuideModal()" class="p-1 text-zinc-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs leading-relaxed text-zinc-300 mt-4">
+                <p>El **Modo Admin** guarda los cambios en la memoria local de tu navegador (`localStorage`). Si deseas publicar la página en Internet (ej. en Netlify, Vercel o GitHub Pages) para que tus clientes vean tus productos actualizados directamente, sigue estos sencillos pasos:</p>
+
+                <div class="bg-zinc-800 p-3.5 rounded-xl border border-zinc-700 space-y-2">
+                    <h4 class="font-bold text-amber-300 text-sm">1️⃣ Cambiar el Número de WhatsApp en el Código</h4>
+                    <p>Abre el archivo <code class="bg-zinc-950 px-1.5 py-0.5 rounded text-amber-200">index.html</code> en un editor de texto (como Notepad o VS Code) y busca la constante <code class="bg-zinc-950 px-1.5 py-0.5 rounded text-emerald-400">storeWspNumber</code> en la línea ~580 aproximadamente:</p>
+                    <pre class="bg-zinc-950 p-2.5 rounded-lg text-[11px] font-mono text-emerald-300 overflow-x-auto">let storeWspNumber = '51900000000'; // <-- Reemplaza por tu número con 51</pre>
+                </div>
+
+                <div class="bg-zinc-800 p-3.5 rounded-xl border border-zinc-700 space-y-2">
+                    <h4 class="font-bold text-amber-300 text-sm">2️⃣ Modificar la lista de productos por defecto</h4>
+                    <p>Busca el arreglo de objetos JavaScript denominado <code class="bg-zinc-950 px-1.5 py-0.5 rounded text-amber-200">initialProducts</code> en el código JavaScript del archivo. Puedes agregar, duplicar o editar productos siguiendo este formato:</p>
+                    <pre class="bg-zinc-950 p-2.5 rounded-lg text-[11px] font-mono text-zinc-300 overflow-x-auto">
+{
+    id: 'akm-01',
+    name: 'Top Rib Daisy Pastel',
+    category: 'tops', // 'tops', 'pantalones', 'vestidos', 'outfits', 'accesorios'
+    price: 49.90,
+    originalPrice: 65.00,
+    badge: 'Más Vendido',
+    sizes: ['S', 'M', 'L'],
+    colorNames: ['Crema', 'Miel'],
+    image: 'https://tu-imagen-aqui.jpg',
+    description: 'Descripción breve de tu prenda...'
+}</pre>
+                </div>
+
+                <div class="bg-zinc-800 p-3.5 rounded-xl border border-zinc-700 space-y-2">
+                    <h4 class="font-bold text-amber-300 text-sm">3️⃣ Exportar productos actuales creados en el Modo Admin</h4>
+                    <p>Si agregaste productos mediante el botón "➕ Añadir Producto", puedes copiar el código JSON generado presionando el botón a continuación:</p>
+                    <button onclick="copyCurrentProductsJSON()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-lg text-xs transition-colors flex items-center gap-1.5">
+                        📋 Copiar JSON de Productos Actuales
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-zinc-900 text-zinc-300 mt-16 border-t border-zinc-800">
+        <div id="metodos-pago" class="border-b border-zinc-800 py-8 bg-zinc-950/60">
+            <div class="max-w-7xl mx-auto px-4 text-center">
+                <p class="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-4">Medios de Pago Aceptados en Perú</p>
+                <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
+                    <div class="bg-zinc-800/80 px-4 py-2 rounded-xl text-purple-300 font-bold text-sm border border-purple-500/30 flex items-center gap-2">
+                        <span>💜 Yape</span>
+                    </div>
+                    <div class="bg-zinc-800/80 px-4 py-2 rounded-xl text-cyan-300 font-bold text-sm border border-cyan-500/30 flex items-center gap-2">
+                        <span>💙 PLIN</span>
+                    </div>
+                    <div class="bg-zinc-800/80 px-4 py-2 rounded-xl text-emerald-300 font-bold text-sm border border-emerald-500/30 flex items-center gap-2">
+                        <span>🏦 Transferencias Bancarias</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="space-y-3">
+                <div class="flex items-center gap-2 text-white font-black text-xl">
+                    <span>🌸 PE AKM STORE</span>
+                </div>
+                <p class="text-xs text-zinc-400 leading-relaxed">
+                    Tu tienda de moda preferida con lo último en tendencias locales. Diseños frescos y compra garantizada por WhatsApp.
+                </p>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-bold text-white mb-3 uppercase tracking-wider">Categorías</h4>
+                <ul class="space-y-2 text-xs text-zinc-400">
+                    <li><a href="#catalogo" onclick="filterCategory('tops')" class="hover:text-amber-400">Tops & Polos</a></li>
+                    <li><a href="#catalogo" onclick="filterCategory('pantalones')" class="hover:text-amber-400">Pantalones</a></li>
+                    <li><a href="#catalogo" onclick="filterCategory('vestidos')" class="hover:text-amber-400">Vestidos</a></li>
+                    <li><a href="#catalogo" onclick="filterCategory('outfits')" class="hover:text-amber-400">Outfits Completos</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-bold text-white mb-3 uppercase tracking-wider">Administración</h4>
+                <ul class="space-y-2 text-xs text-zinc-400">
+                    <li><button onclick="toggleAdminMode()" class="hover:text-purple-300 text-left font-bold text-purple-400">⚙️ Activar / Desactivar Admin</button></li>
+                    <li><button onclick="openAdminModal('settings')" class="hover:text-amber-400 text-left">📲 Configurar Número WSP</button></li>
+                    <li><button onclick="openCodeGuideModal()" class="hover:text-amber-400 text-left">📖 Guía para publicar web</button></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-bold text-white mb-3 uppercase tracking-wider">Atención al Cliente</h4>
+                <p class="text-xs text-zinc-400 mb-2">¿Consultas directas?</p>
+                <a id="footerWspBtn" href="#" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-colors">
+                    💬 Chat WhatsApp
+                </a>
+            </div>
+        </div>
+
+        <div class="border-t border-zinc-800 py-6 text-center text-xs text-zinc-500 flex flex-col sm:flex-row justify-between items-center max-w-7xl mx-auto px-4 gap-2">
+            <p>© 2026 PE AKM STORE. Todos los derechos reservados.</p>
+            <button onclick="toggleAdminMode()" class="text-zinc-600 hover:text-zinc-400 transition-colors">⚙️ Ajustes de Tienda</button>
+        </div>
+    </footer>
+
+    <!-- Application State & Interactive Logic -->
+    <script>
+        // Initial Default Catalog Products
+        const initialProducts = [
+            {
+                id: 'akm-01',
+                name: 'Top Rib Daisy Pastel',
+                category: 'tops',
+                price: 49.90,
+                originalPrice: 65.00,
+                badge: 'Más Vendido',
+                sizes: ['S', 'M', 'L'],
+                colors: ['#FAF7F2', '#F8C363', '#18181B'],
+                colorNames: ['Crema', 'Miel', 'Negro'],
+                image: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=600&q=80',
+                description: 'Top confeccionado en rib algodón suave con detalle bordado de flor margarita. Ideal para jeans de tiro alto.'
+            },
+            {
+                id: 'akm-02',
+                name: 'Wide Leg Denim Oversized',
+                category: 'pantalones',
+                price: 89.90,
+                originalPrice: 110.00,
+                badge: 'Tendencia',
+                sizes: ['26', '28', '30', '32'],
+                colors: ['#93C5FD', '#1E3A8A'],
+                colorNames: ['Azul Claro', 'Azul Clásico'],
+                image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=600&q=80',
+                description: 'Pantalón jean holgado tiro alto de corte favorecedor. Denim 100% peruano resistente y duradero.'
+            },
+            {
+                id: 'akm-03',
+                name: 'Vestido Midi Floral Bloom',
+                category: 'vestidos',
+                price: 99.90,
+                originalPrice: 129.00,
+                badge: 'Nuevo',
+                sizes: ['S', 'M'],
+                colors: ['#FEF08A', '#FBCFE8'],
+                colorNames: ['Amarillo Miel', 'Rosa Pastel'],
+                image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=600&q=80',
+                description: 'Vestido fluido midi con abertura lateral sutil y tirantes ajustables.'
+            },
+            {
+                id: 'akm-04',
+                name: 'Set Outfit Casual Urban',
+                category: 'outfits',
+                price: 119.90,
+                originalPrice: 149.00,
+                badge: 'Oferta Duo',
+                sizes: ['S', 'M', 'L'],
+                colors: ['#E5E7EB', '#F59E0B'],
+                colorNames: ['Gris Mármol', 'Mostaza'],
+                image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600&q=80',
+                description: 'Dúo coordinado compuesto por polo oversize y pantaloneta ligera.'
+            },
+            {
+                id: 'akm-05',
+                name: 'Polo Oversized AKM Daisy',
+                category: 'tops',
+                price: 55.00,
+                originalPrice: 70.00,
+                badge: 'Exclusivo',
+                sizes: ['S', 'M', 'L'],
+                colors: ['#18181B', '#FAF7F2'],
+                colorNames: ['Negro', 'Crema'],
+                image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80',
+                description: 'Polo 100% Algodón Reactivo con estampado serigráfico en alta definición.'
+            },
+            {
+                id: 'akm-06',
+                name: 'Cargo Pants Beige Utility',
+                category: 'pantalones',
+                price: 95.00,
+                originalPrice: 120.00,
+                badge: 'Top Ventas',
+                sizes: ['28', '30', '32'],
+                colors: ['#D7CCC8', '#37474F'],
+                colorNames: ['Beige', 'Verde Oliva'],
+                image: 'https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=600&q=80',
+                description: 'Pantalón estilo cargo con bolsillos laterales funcionales.'
+            }
+        ];
+
+        // Store App State
+        let isAdminMode = localStorage.getItem('akm_admin_mode') === 'true';
+        let storeWspNumber = localStorage.getItem('akm_wsp_number') || '51900000000';
+        let defaultShippingFee = parseFloat(localStorage.getItem('akm_shipping_fee') || '10.00');
+        let products = JSON.parse(localStorage.getItem('akm_products_data') || 'null') || [...initialProducts];
+        
+        let currentCategory = 'all';
+        let searchQuery = '';
+        let currentSort = 'featured';
+        let cart = JSON.parse(localStorage.getItem('akm_cart') || '[]');
+
+        // Initialize Store Configurations
+        function updateStoreConfigUI() {
+            // Update WhatsApp Buttons
+            const wspFormatted = storeWspNumber.startsWith('51') ? storeWspNumber : `51${storeWspNumber}`;
+            const directWspUrl = `https://wa.me/${wspFormatted}?text=Hola%20PE%20AKM%20STORE,%20quisiera%20consultar%20sobre%20sus%20prendas`;
+            
+            document.getElementById('headerWspBtn').href = directWspUrl;
+            document.getElementById('footerWspBtn').href = directWspUrl;
+            document.getElementById('heroWspDisplay').textContent = `+${wspFormatted}`;
+            document.getElementById('ribbonWspNum').textContent = wspFormatted;
+            document.getElementById('cartShippingText').textContent = `S/. ${defaultShippingFee.toFixed(2)}`;
+
+            // Admin Toggle Visual States
+            const adminRibbon = document.getElementById('adminRibbon');
+            const heroAdminStatus = document.getElementById('heroAdminStatus');
+            const heroAdminBtn = document.getElementById('heroAdminBtn');
+            const adminAddBtnContainer = document.getElementById('adminAddBtnContainer');
+            const topAdminStatusText = document.getElementById('topAdminStatusText');
+            const mobileAdminBtnText = document.getElementById('mobileAdminBtnText');
+
+            if (isAdminMode) {
+                adminRibbon.classList.remove('hidden');
+                heroAdminStatus.textContent = 'ACTIVO (Edición ON)';
+                heroAdminStatus.className = 'text-[10px] text-purple-600 font-bold';
+                heroAdminBtn.textContent = 'Desactivar';
+                heroAdminBtn.className = 'px-2.5 py-1 text-[11px] font-bold bg-purple-700 text-white rounded-lg';
+                adminAddBtnContainer.classList.remove('hidden');
+                topAdminStatusText.textContent = 'Admin: ON';
+                mobileAdminBtnText.textContent = 'Desactivar Modo Admin';
+            } else {
+                adminRibbon.classList.add('hidden');
+                heroAdminStatus.textContent = 'Inactivo';
+                heroAdminStatus.className = 'text-[10px] text-zinc-500';
+                heroAdminBtn.textContent = 'Activar';
+                heroAdminBtn.className = 'px-2.5 py-1 text-[11px] font-bold bg-zinc-100 hover:bg-purple-600 hover:text-white rounded-lg transition-colors';
+                adminAddBtnContainer.classList.add('hidden');
+                topAdminStatusText.textContent = 'Modo Admin';
+                mobileAdminBtnText.textContent = 'Activar Modo Admin';
+            }
+        }
+
+        // Toggle Admin Mode
+        function toggleAdminMode() {
+            isAdminMode = !isAdminMode;
+            localStorage.setItem('akm_admin_mode', isAdminMode);
+            updateStoreConfigUI();
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            const emptyState = document.getElementById('emptyState');
+            const counter = document.getElementById('productCounter');
+
+            let filtered = products.filter(p => {
+                const matchCat = currentCategory === 'all' || p.category === currentCategory;
+                const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                    p.description.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchCat && matchSearch;
+            });
+
+            if (currentSort === 'low') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (currentSort === 'high') {
+                filtered.sort((a, b) => b.price - a.price);
+            }
+
+            counter.textContent = `${filtered.length} prenda(s)`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            grid.innerHTML = filtered.map(product => `
+                <div class="bg-white rounded-2xl border ${isAdminMode ? 'border-purple-300 admin-pulse' : 'border-zinc-200/80'} overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative">
+                    
+                    <!-- Admin Action Quick Bar on Image Top Right -->
+                    ${isAdminMode ? `
+                        <div class="absolute top-2 right-2 z-20 flex gap-1 bg-white/90 backdrop-blur-md p-1 rounded-xl shadow-lg border border-purple-200">
+                            <button onclick="openEditProduct('${product.id}')" title="Editar Producto" class="p-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg text-xs font-bold transition-colors">
+                                ✏️
+                            </button>
+                            <button onclick="deleteProduct('${product.id}')" title="Eliminar Producto" class="p-1.5 bg-rose-100 hover:bg-rose-200 text-rose-900 rounded-lg text-xs font-bold transition-colors">
+                                🗑️
+                            </button>
+                        </div>
+                    ` : ''}
+
+                    <div>
+                        <!-- Product Image -->
+                        <div class="relative aspect-[4/5] bg-zinc-100 overflow-hidden cursor-pointer" onclick="openProductModal('${product.id}')">
+                            <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                            ${product.badge ? `<span class="absolute top-3 left-3 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ${product.badgeColor || 'bg-amber-500 text-white'} shadow-md">${product.badge}</span>` : ''}
+                            
+                            <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center p-3">
+                                <span class="bg-white/90 backdrop-blur-sm text-zinc-900 font-bold text-xs px-3 py-1.5 rounded-full shadow-md hover:bg-white transition-colors">Vista Rápida</span>
+                            </div>
+                        </div>
+
+                        <!-- Product Content -->
+                        <div class="p-3.5 sm:p-4">
+                            <span class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">${product.category}</span>
+                            <h3 class="text-xs sm:text-sm font-bold text-zinc-900 group-hover:text-amber-800 transition-colors line-clamp-1 cursor-pointer" onclick="openProductModal('${product.id}')">
+                                ${product.name}
+                            </h3>
+
+                            <div class="mt-2 flex items-baseline gap-2">
+                                <span class="text-sm sm:text-base font-black text-brand-dark">S/. ${product.price.toFixed(2)}</span>
+                                ${product.originalPrice ? `<span class="text-xs text-zinc-600 line-through">S/. ${product.originalPrice.toFixed(2)}</span>` : ''}
+                            </div>
+
+                            <div class="flex items-center gap-1.5 mt-2.5">
+                                ${product.colors ? product.colors.map(c => `<span class="w-2.5 h-2.5 rounded-full border border-zinc-300 shadow-2xs" style="background-color: ${c}"></span>`).join('') : ''}
+                                <span class="text-[10px] text-zinc-600 font-medium ml-1">${product.sizes.join(', ')}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cart CTA -->
+                    <div class="p-3.5 sm:p-4 pt-0">
+                        <button onclick="quickAddToCart('${product.id}')" class="w-full py-2.5 bg-brand-bg hover:bg-brand-accent text-brand-dark font-bold text-xs rounded-xl border border-zinc-300 hover:border-brand-accent transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            <span>Agregar al Carrito</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Category & Search Filters
+        function filterCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-pill').forEach(btn => {
+                if (btn.dataset.cat === cat) {
+                    btn.classList.add('bg-brand-dark', 'text-white');
+                    btn.classList.remove('bg-white', 'text-zinc-700');
+                } else {
+                    btn.classList.remove('bg-brand-dark', 'text-white');
+                    btn.classList.add('bg-white', 'text-zinc-700');
+                }
+            });
+            renderProducts();
+        }
+
+        function sortProducts(val) {
+            currentSort = val;
+            renderProducts();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderProducts();
+        });
+
+        document.getElementById('clearSearchBtn').addEventListener('click', () => {
+            document.getElementById('searchInput').value = '';
+            searchQuery = '';
+            renderProducts();
+        });
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            searchQuery = '';
+            filterCategory('all');
+        }
+
+        // Cart Actions
+        function quickAddToCart(productId, selectedSize = null, selectedColor = null) {
+            const prod = products.find(p => p.id === productId);
+            if (!prod) return;
+
+            const size = selectedSize || prod.sizes[0];
+            const color = selectedColor || (prod.colorNames ? prod.colorNames[0] : 'Estándar');
+
+            const existingIndex = cart.findIndex(item => item.id === productId && item.size === size && item.color === color);
+
+            if (existingIndex > -1) {
+                cart[existingIndex].quantity += 1;
+            } else {
+                cart.push({
+                    id: prod.id,
+                    name: prod.name,
+                    price: prod.price,
+                    image: prod.image,
+                    size: size,
+                    color: color,
+                    quantity: 1
+                });
+            }
+
+            saveCart();
+            openCart();
+        }
+
+        function updateQuantity(index, delta) {
+            cart[index].quantity += delta;
+            if (cart[index].quantity <= 0) {
+                cart.splice(index, 1);
+            }
+            saveCart();
+        }
+
+        function saveCart() {
+            localStorage.setItem('akm_cart', JSON.stringify(cart));
+            updateCartBadge();
+            renderCartItems();
+        }
+
+        function updateCartBadge() {
+            const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCount').textContent = totalCount;
+            document.getElementById('cartBadgeCount').textContent = totalCount;
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cartItemsList');
+            const subtotalEl = document.getElementById('cartSubtotal');
+            const totalEl = document.getElementById('cartTotal');
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-4xl mb-3">🛍️</div>
+                        <p class="font-bold text-zinc-700">Tu carrito está vacío</p>
+                        <p class="text-xs text-zinc-500 mt-1">Explora nuestro catálogo e incluye tus prendas favoritas.</p>
+                    </div>
+                `;
+                subtotalEl.textContent = 'S/. 0.00';
+                totalEl.textContent = 'S/. 0.00';
+                return;
+            }
+
+            let subtotal = 0;
+            container.innerHTML = cart.map((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                return `
+                    <div class="flex gap-3 bg-zinc-50 p-3 rounded-2xl border border-zinc-100 items-center">
+                        <img src="${item.image}" alt="${item.name}" class="w-16 h-20 object-cover rounded-xl bg-white" />
+                        <div class="flex-grow min-w-0">
+                            <h4 class="text-xs font-bold text-zinc-900 truncate">${item.name}</h4>
+                            <div class="flex gap-2 text-[11px] text-zinc-500 mt-0.5">
+                                <span>Talla: <strong>${item.size}</strong></span>
+                                <span>•</span>
+                                <span>Color: <strong>${item.color}</strong></span>
+                            </div>
+                            <div class="text-xs font-extrabold text-brand-dark mt-1">S/. ${item.price.toFixed(2)}</div>
+                            
+                            <div class="flex items-center gap-2 mt-2">
+                                <button onclick="updateQuantity(${index}, -1)" class="w-6 h-6 bg-white rounded-md border border-zinc-300 text-xs font-bold flex items-center justify-center hover:bg-zinc-100">-</button>
+                                <span class="text-xs font-bold px-1">${item.quantity}</span>
+                                <button onclick="updateQuantity(${index}, 1)" class="w-6 h-6 bg-white rounded-md border border-zinc-300 text-xs font-bold flex items-center justify-center hover:bg-zinc-100">+</button>
+                            </div>
+                        </div>
+                        <div class="text-right flex flex-col justify-between items-end h-full">
+                            <button onclick="updateQuantity(${index}, -${item.quantity})" class="text-zinc-400 hover:text-red-500 p-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                            <span class="text-xs font-bold text-zinc-900">S/. ${itemTotal.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const grandTotal = subtotal + defaultShippingFee;
+            subtotalEl.textContent = `S/. ${subtotal.toFixed(2)}`;
+            totalEl.textContent = `S/. ${grandTotal.toFixed(2)}`;
+        }
+
+        function openProductModal(productId) {
+            const prod = products.find(p => p.id === productId);
+            if (!prod) return;
+
+            const modalContent = document.getElementById('productModalContent');
+            modalContent.innerHTML = `
+                <div class="aspect-[4/5] bg-zinc-100 rounded-2xl overflow-hidden">
+                    <img src="${prod.image}" alt="${prod.name}" class="w-full h-full object-cover" />
+                </div>
+                <div class="flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-zinc-600 uppercase tracking-widest">${prod.category}</span>
+                        <h2 class="text-xl font-black text-zinc-900 mt-1">${prod.name}</h2>
+                        
+                        <div class="mt-3 flex items-baseline gap-3">
+                            <span class="text-2xl font-black text-brand-dark">S/. ${prod.price.toFixed(2)}</span>
+                            ${prod.originalPrice ? `<span class="text-sm text-zinc-600 line-through">S/. ${prod.originalPrice.toFixed(2)}</span>` : ''}
+                        </div>
+
+                        <p class="text-xs text-zinc-600 leading-relaxed mt-4">${prod.description || 'Prenda de alta calidad confeccionada con estándares locales.'}</p>
+
+                        <div class="mt-5">
+                            <label class="block text-xs font-bold text-zinc-700 uppercase mb-2">Talla:</label>
+                            <div class="flex gap-2">
+                                ${prod.sizes.map((s, idx) => `
+                                    <button onclick="selectModalSize(this, '${s}')" class="modal-size-btn ${idx === 0 ? 'bg-brand-dark text-white' : 'bg-zinc-100 text-zinc-800'} px-3.5 py-1.5 rounded-lg text-xs font-bold border border-zinc-200">
+                                        ${s}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="mt-5">
+                            <label class="block text-xs font-bold text-zinc-700 uppercase mb-2">Color:</label>
+                            <div class="flex gap-2">
+                                ${(prod.colorNames || ['Único']).map((c, idx) => `
+                                    <button onclick="selectModalColor(this, '${c}')" class="modal-color-btn ${idx === 0 ? 'ring-2 ring-brand-dark font-bold' : 'bg-zinc-100'} px-3 py-1 rounded-lg text-xs text-zinc-800 border border-zinc-200">
+                                        ${c}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8">
+                        <button id="addFromModalBtn" class="w-full py-3.5 bg-brand-dark hover:bg-zinc-800 text-white font-extrabold text-sm rounded-xl shadow-lg transition-all active:scale-95">
+                            Agregar al Carrito
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('addFromModalBtn').onclick = () => {
+                quickAddToCart(prod.id, window.currentModalSize || prod.sizes[0], window.currentModalColor || (prod.colorNames ? prod.colorNames[0] : 'Único'));
+                closeProductModal();
+            };
+
+            document.getElementById('productModal').classList.remove('hidden');
+        }
+
+        function selectModalSize(btn, size) {
+            document.querySelectorAll('.modal-size-btn').forEach(b => {
+                b.classList.remove('bg-brand-dark', 'text-white');
+                b.classList.add('bg-zinc-100', 'text-zinc-800');
+            });
+            btn.classList.add('bg-brand-dark', 'text-white');
+            window.currentModalSize = size;
+        }
+
+        function selectModalColor(btn, color) {
+            document.querySelectorAll('.modal-color-btn').forEach(b => {
+                b.classList.remove('ring-2', 'ring-brand-dark', 'font-bold');
+            });
+            btn.classList.add('ring-2', 'ring-brand-dark', 'font-bold');
+            window.currentModalColor = color;
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+
+        // ADMIN MODAL & CRUD FUNCTIONS
+        function openAdminModal(mode) {
+            const modal = document.getElementById('adminModal');
+            const title = document.getElementById('adminModalTitle');
+            const settingsForm = document.getElementById('adminSettingsForm');
+            const productForm = document.getElementById('adminProductForm');
+
+            if (mode === 'settings') {
+                title.textContent = '⚙️ Configuración de Tienda y WhatsApp';
+                settingsForm.classList.remove('hidden');
+                productForm.classList.add('hidden');
+                document.getElementById('adminWspInput').value = storeWspNumber;
+                document.getElementById('adminShippingInput').value = defaultShippingFee;
+            } else if (mode === 'add') {
+                title.textContent = '➕ Agregar Nuevo Producto';
+                settingsForm.classList.add('hidden');
+                productForm.classList.remove('hidden');
+                productForm.reset();
+                document.getElementById('prodEditId').value = '';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function openEditProduct(productId) {
+            const prod = products.find(p => p.id === productId);
+            if (!prod) return;
+
+            const modal = document.getElementById('adminModal');
+            document.getElementById('adminModalTitle').textContent = `✏️ Editar: ${prod.name}`;
+            document.getElementById('adminSettingsForm').classList.add('hidden');
+            
+            const productForm = document.getElementById('adminProductForm');
+            productForm.classList.remove('hidden');
+
+            document.getElementById('prodEditId').value = prod.id;
+            document.getElementById('prodName').value = prod.name;
+            document.getElementById('prodPrice').value = prod.price;
+            document.getElementById('prodOrigPrice').value = prod.originalPrice || '';
+            document.getElementById('prodCategory').value = prod.category;
+            document.getElementById('prodBadge').value = prod.badge || '';
+            document.getElementById('prodImage').value = prod.image;
+            document.getElementById('prodSizes').value = prod.sizes ? prod.sizes.join(', ') : 'S, M, L';
+            document.getElementById('prodColorNames').value = prod.colorNames ? prod.colorNames.join(', ') : '';
+            document.getElementById('prodDesc').value = prod.description || '';
+
+            modal.classList.remove('hidden');
+        }
+
+        function deleteProduct(productId) {
+            if (confirm('¿Estás seguro de que deseas eliminar este producto del catálogo?')) {
+                products = products.filter(p => p.id !== productId);
+                saveProductsToStorage();
+                renderProducts();
+            }
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.add('hidden');
+        }
+
+        function saveProductsToStorage() {
+            localStorage.setItem('akm_products_data', JSON.stringify(products));
+        }
+
+        // Form Submit: Settings
+        document.getElementById('adminSettingsForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const wsp = document.getElementById('adminWspInput').value.trim().replace(/[^0-9]/g, '');
+            const shipping = parseFloat(document.getElementById('adminShippingInput').value);
+
+            if (wsp) {
+                storeWspNumber = wsp;
+                localStorage.setItem('akm_wsp_number', wsp);
+            }
+            if (!isNaN(shipping)) {
+                defaultShippingFee = shipping;
+                localStorage.setItem('akm_shipping_fee', shipping);
+            }
+
+            updateStoreConfigUI();
+            renderCartItems();
+            closeAdminModal();
+            alert('¡Configuración de tienda guardada exitosamente!');
+        });
+
+        // Form Submit: Add or Edit Product
+        document.getElementById('adminProductForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const editId = document.getElementById('prodEditId').value;
+            const name = document.getElementById('prodName').value.trim();
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const origPriceVal = document.getElementById('prodOrigPrice').value;
+            const originalPrice = origPriceVal ? parseFloat(origPriceVal) : null;
+            const category = document.getElementById('prodCategory').value;
+            const badge = document.getElementById('prodBadge').value.trim();
+            const image = document.getElementById('prodImage').value.trim();
+            const sizesRaw = document.getElementById('prodSizes').value.trim();
+            const colorsRaw = document.getElementById('prodColorNames').value.trim();
+            const description = document.getElementById('prodDesc').value.trim();
+
+            const sizes = sizesRaw ? sizesRaw.split(',').map(s => s.trim()) : ['Única'];
+            const colorNames = colorsRaw ? colorsRaw.split(',').map(c => c.trim()) : ['Estándar'];
+
+            if (editId) {
+                // Update Existing
+                const idx = products.findIndex(p => p.id === editId);
+                if (idx > -1) {
+                    products[idx] = {
+                        ...products[idx],
+                        name, price, originalPrice, category, badge, image, sizes, colorNames, description
+                    };
+                }
+            } else {
+                // Add New
+                const newProd = {
+                    id: 'akm-' + Date.now().toString().slice(-4),
+                    name, price, originalPrice, category, badge, image, sizes, colorNames, description,
+                    colors: ['#FAF7F2', '#18181B']
+                };
+                products.unshift(newProd);
+            }
+
+            saveProductsToStorage();
+            renderProducts();
+            closeAdminModal();
+        });
+
+        function resetToInitialData() {
+            if (confirm('¿Deseas restaurar el catálogo inicial de ejemplo? Todos los productos agregados manualmente se reiniciarás.')) {
+                products = [...initialProducts];
+                storeWspNumber = '51900000000';
+                defaultShippingFee = 10.00;
+                localStorage.removeItem('akm_products_data');
+                localStorage.removeItem('akm_wsp_number');
+                localStorage.removeItem('akm_shipping_fee');
+                updateStoreConfigUI();
+                renderProducts();
+                closeAdminModal();
+            }
+        }
+
+        // Code Guide Modal Controls
+        function openCodeGuideModal() {
+            document.getElementById('codeGuideModal').classList.remove('hidden');
+        }
+
+        function closeCodeGuideModal() {
+            document.getElementById('codeGuideModal').classList.add('hidden');
+        }
+
+        function copyCurrentProductsJSON() {
+            const jsonText = JSON.stringify(products, null, 4);
+            const dummy = document.createElement('textarea');
+            document.body.appendChild(dummy);
+            dummy.value = jsonText;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            alert('¡Código JSON de productos copiado al portapapeles! Puedes pegarlo en tu archivo JS.');
+        }
+
+        // Drawer Navigation Toggles
+        function openCart() {
+            document.getElementById('cartDrawer').classList.remove('translate-x-full');
+        }
+
+        function closeCart() {
+            document.getElementById('cartDrawer').classList.add('translate-x-full');
+        }
+
+        function toggleMobileDrawer() {
+            document.getElementById('mobileDrawer').classList.toggle('-translate-x-full');
+        }
+
+        // Proceed Checkout Button (Modal Step 2)
+        document.getElementById('proceedCheckoutBtn').addEventListener('click', () => {
+            if (cart.length === 0) {
+                alert('Tu carrito está vacío. Añade productos antes de pedir.');
+                return;
+            }
+            closeCart();
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const total = subtotal + defaultShippingFee;
+            const itemsStr = cart.map(i => `${i.quantity}x ${i.name} (${i.size})`).join(', ');
+
+            document.getElementById('modalItemsSummary').textContent = itemsStr;
+            document.getElementById('modalTotalSummary').textContent = `S/. ${total.toFixed(2)}`;
+
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        });
+
+        // Checkout Form Submit -> WhatsApp Link Redirect
+        document.getElementById('checkoutForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const city = document.getElementById('custCity').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+            const payment = document.getElementById('custPayment').value;
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const grandTotal = subtotal + defaultShippingFee;
+
+            let msg = `🌸 *NUEVO PEDIDO - PE AKM STORE* 🌸\n\n`;
+            msg += `👤 *Cliente:* ${name}\n`;
+            msg += `📞 *Teléfono:* ${phone}\n`;
+            msg += `📍 *Ciudad/Distrito:* ${city}\n`;
+            if (address) msg += `🏠 *Dirección:* ${address}\n`;
+            msg += `💳 *Método de Pago:* ${payment}\n`;
+            msg += `\n🛒 *DETALLE DEL PEDIDO:*\n`;
+
+            cart.forEach((item, index) => {
+                msg += `${index + 1}. ${item.name}\n   • Talla: ${item.size} | Color: ${item.color}\n   • Cantidad: ${item.quantity} | Subtotal: S/. ${(item.price * item.quantity).toFixed(2)}\n`;
+            });
+
+            msg += `\n🚚 *Envío Estimado:* S/. ${defaultShippingFee.toFixed(2)}\n`;
+            msg += `💰 *TOTAL A PAGAR: S/. ${grandTotal.toFixed(2)}*\n\n`;
+            msg += `¡Hola! Quedo a la espera para coordinar el pago por ${payment} y confirmar el despacho. ¡Muchas gracias!`;
+
+            const cleanWspNumber = storeWspNumber.startsWith('51') ? storeWspNumber : `51${storeWspNumber}`;
+            const encodedMsg = encodeURIComponent(msg);
+            const wspUrl = `https://wa.me/${cleanWspNumber}?text=${encodedMsg}`;
+
+            window.open(wspUrl, '_blank');
+
+            cart = [];
+            saveCart();
+            document.getElementById('checkoutModal').classList.add('hidden');
+        });
+
+        // Bind Window Controls
+        document.getElementById('searchToggleBtn').onclick = () => {
+            const container = document.getElementById('searchBarContainer');
+            container.classList.toggle('hidden');
+            if (!container.classList.contains('hidden')) {
+                document.getElementById('searchInput').focus();
+            }
+        };
+
+        document.getElementById('openCartBtn').onclick = openCart;
+        document.getElementById('closeCartBtn').onclick = closeCart;
+        document.getElementById('closeCartBg').onclick = closeCart;
+        document.getElementById('mobileMenuBtn').onclick = toggleMobileDrawer;
+        document.getElementById('closeMobileDrawerBtn').onclick = toggleMobileDrawer;
+        document.getElementById('closeMobileDrawerBg').onclick = toggleMobileDrawer;
+        document.getElementById('closeCheckoutBtn').onclick = () => document.getElementById('checkoutModal').classList.add('hidden');
+        document.getElementById('closeCheckoutBg').onclick = () => document.getElementById('checkoutModal').classList.add('hidden');
+        document.getElementById('closeProductBtn').onclick = closeProductModal;
+        document.getElementById('closeProductBg').onclick = closeProductModal;
+
+        // Banner Text Animation
+        const announcements = [
+            "✨ Envíos a todo el Perú | Pagos 100% seguros con Yape y PLIN 🌸",
+            "🛍️ Catálogo interactivo personalizable para tu negocio",
+            "💬 Atención personalizada y pedidos directos a WhatsApp"
+        ];
+        let annIdx = 0;
+        setInterval(() => {
+            annIdx = (annIdx + 1) % announcements.length;
+            const annEl = document.getElementById('announcementText');
+            annEl.style.opacity = '0';
+            setTimeout(() => {
+                annEl.textContent = announcements[annIdx];
+                annEl.style.opacity = '1';
+            }, 300);
+        }, 4000);
+
+        // App Initialization
+        window.onload = function() {
+            updateStoreConfigUI();
+            renderProducts();
+            saveCart();
+        };
+    </script>
+</body>
+</html>
